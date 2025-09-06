@@ -14,7 +14,99 @@ class TodoScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        toolbarHeight: 70,
+        title: Row(
+          children: [
+            CircleAvatar(
+              radius: 22,
+              backgroundColor: Colors.orange[200],
+              child: const Text('👨🏽', style: TextStyle(fontSize: 20)),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Hello,',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+                const Text(
+                  'Adithyan ks',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.notifications_active, size: 20),
+              onPressed: () {},
+              color: Colors.black,
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Consumer<TaskProvider>(
+              builder: (context, taskProvider, child) {
+                return PopupMenuButton<String>(
+                  icon: const Icon(
+                    Icons.more_vert_outlined,
+                    size: 20,
+                    color: Colors.black,
+                  ),
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'clear_all':
+                        _showClearDialog(context, taskProvider, 'all');
+                        break;
+                      case 'clear_completed':
+                        _showClearDialog(context, taskProvider, 'completed');
+                        break;
+                    }
+                  },
+                  itemBuilder: (BuildContext context) =>
+                      <PopupMenuEntry<String>>[
+                        PopupMenuItem<String>(
+                          value: 'clear_completed',
+                          enabled: taskProvider.completedTaskCount > 0,
+                          child: const Text('Clear Completed'),
+                        ),
+                        PopupMenuItem<String>(
+                          value: 'clear_all',
+                          enabled: taskProvider.taskCount > 0,
+                          child: const Text('Clear All'),
+                        ),
+                      ],
+                );
+              },
+            ),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           const TaskStats(),
@@ -135,6 +227,42 @@ class TodoScreen extends StatelessWidget {
               Navigator.of(context).pop();
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showClearDialog(
+    BuildContext context,
+    TaskProvider taskProvider,
+    String type,
+  ) {
+    final title = type == 'all' ? 'Clear All Tasks' : 'Clear Completed Tasks';
+    final content = type == 'all'
+        ? 'Are you sure you want to delete all tasks?'
+        : 'Are you sure you want to delete all completed tasks?';
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(content),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (type == 'all') {
+                taskProvider.clearAllTasks();
+              } else {
+                taskProvider.clearCompletedTasks();
+              }
+              Navigator.of(context).pop();
+            },
+            child: const Text('Clear', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
