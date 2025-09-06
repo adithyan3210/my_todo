@@ -1,30 +1,30 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:mytodo/main.dart';
+import 'package:mytodo/provider/task_provider.dart';
+import 'package:mytodo/screens/todo_screen.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('tapping Add Task opens Add New Task dialog', (tester) async {
+    // Arrange
+    await tester.pumpWidget(
+      ChangeNotifierProvider(
+        create: (_) => TaskProvider(),
+        child: MaterialApp(home: TodoScreen()),
+      ),
+    );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Assert initial state
+    expect(find.text('No tasks yet!'), findsOneWidget);
+    expect(find.text('Add Task'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // Act: tap "Add Task"
+    await tester.tap(find.text('Add Task'));
+    await tester.pumpAndSettle();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Assert: dialog shows up
+    expect(find.text('Add New Task'), findsOneWidget);
+    expect(find.text('Title'), findsOneWidget);
+    expect(find.text('Description (Optional)'), findsOneWidget);
   });
 }
